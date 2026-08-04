@@ -1,0 +1,140 @@
+
+.add-tx-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.add-tx-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 32px;
+}
+
+.text-center {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.type-switcher {
+  display: flex;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 32px;
+}
+
+.switch-btn {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.3s;
+}
+
+.switch-btn.active {
+  color: white;
+}
+
+.switch-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-tx-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.amount-group {
+  position: relative;
+  align-items: center;
+}
+
+.amount-input {
+  width: 100%;
+  text-align: center;
+  font-size: 40px;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border-light);
+  border-radius: 0;
+  padding: 8px 0;
+  color: var(--text-primary);
+}
+
+.amount-input:focus {
+  background: transparent;
+  border-bottom-color: var(--accent-primary);
+}
+
+.currency-label {
+  position: absolute;
+  right: 0;
+  bottom: 16px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.category-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.category-chip:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.category-chip.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--cat-color);
+  color: var(--cat-color);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.05);
+}
+
+.submit-btn {
+  margin-top: 16px;
+  padding: 16px;
+  font-size: 16px;
+}
+

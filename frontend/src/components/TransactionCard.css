@@ -1,0 +1,94 @@
+
+.transaction-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.transaction-card:hover {
+  transform: translateX(4px) translateY(-2px);
+  background: var(--bg-glass-hover);
+}
+
+.tx-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.tx-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tx-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.tx-note {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.tx-category {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.tx-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tx-amount {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+  transition: transform 0.2s;
+}
+
+.transaction-card:hover .tx-amount {
+  transform: translateX(-24px);
+}
+
+.tx-delete {
+  position: absolute;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(248, 113, 113, 0.2);
+  color: var(--color-expense);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s ease;
+}
+
+.transaction-card:hover .tx-delete {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tx-delete:hover {
+  background: var(--color-expense);
+  color: white;
+}
+
