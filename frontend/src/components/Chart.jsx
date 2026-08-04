@@ -1,199 +1,186 @@
-import { useEffect, useState } from "react";
-import "./Chart.css";
+import React, { useEffect, useState } from 'react'
+import './Chart.css'
 
-const formatMoney = (amount) => {
-  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;
-  if (amount >= 1000) return `${(amount / 1000).toFixed(0)}K`;
-  return amount.toString();
-};
+export function AreaChart() {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setTimeout(() => setMounted(true), 100)
+  }, [])
 
-export function DonutChart({ data, size = 200, centerLabel, centerValue }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // Dummy data
+  const points = [
+    { x: 0, income: 40, expense: 30 },
+    { x: 25, income: 60, expense: 45 },
+    { x: 50, income: 45, expense: 70 },
+    { x: 75, income: 80, expense: 50 },
+    { x: 100, income: 100, expense: 65 },
+  ]
 
-  const total = data.reduce((sum, d) => sum + d.value, 0) || 1;
-  const radius = size * 0.4;
-  const circumference = 2 * Math.PI * radius;
-  let cumulativePercent = 0;
+  const createPath = (key) => {
+    return points.reduce((acc, point, i) => {
+      if (i === 0) return `M ${point.x} ${100 - point[key]}`
+      const prev = points[i - 1]
+      const cp1x = prev.x + (point.x - prev.x) / 2
+      const cp1y = 100 - prev[key]
+      const cp2x = cp1x
+      const cp2y = 100 - point[key]
+      return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${point.x} ${100 - point[key]}`
+    }, "")
+  }
 
-  const center = size / 2;
+  const incomePath = createPath('income')
+  const expensePath = createPath('expense')
+
+  const incomeFill = `${incomePath} L 100 100 L 0 100 Z`
+  const expenseFill = `${expensePath} L 100 100 L 0 100 Z`
 
   return (
-    <div className="donut-wrapper" style={{ width: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {data.map((d, i) => {
-          const percent = (d.value / total);
-          const strokeDasharray = `${circumference * percent} ${circumference}`;
-          const strokeDashoffset = -circumference * cumulativePercent;
-          cumulativePercent += percent;
+    <div className="chart-container">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="area-chart-svg">
+        <defs>
+          <linearGradient id="income-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="expense-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#F43F5E" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#F43F5E" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        
+        {/* Grid */}
+        <line x1="0" y1="25" x2="100" y2="25" stroke="#F1F5F9" strokeWidth="0.5" />
+        <line x1="0" y1="50" x2="100" y2="50" stroke="#F1F5F9" strokeWidth="0.5" />
+        <line x1="0" y1="75" x2="100" y2="75" stroke="#F1F5F9" strokeWidth="0.5" />
+
+        <g className={`chart-lines ${mounted ? 'draw' : ''}`}>
+          {/* Fills */}
+          <path d={incomeFill} fill="url(#income-grad)" className="chart-fill" />
+          <path d={expenseFill} fill="url(#expense-grad)" className="chart-fill" />
           
-          return (
-            <circle
-              key={i}
-              cx={center}
-              cy={center}
-              r={radius}
-              fill="transparent"
-              stroke={d.color}
-              strokeWidth={radius * 0.3}
-              strokeDasharray={strokeDasharray}
-              strokeDashoffset={strokeDashoffset}
-              transform={`rotate(-90 ${center} ${center})`}
-              className={`donut-segment ${mounted ? "animated" : ""}`}
-            />
-          );
-        })}
-        <text x="50%" y="45%" textAnchor="middle" className="donut-value" fill="var(--text-primary)" fontSize="20" fontWeight="bold">
-          {centerValue}
-        </text>
-        <text x="50%" y="60%" textAnchor="middle" className="donut-label" fill="var(--text-secondary)" fontSize="12">
-          {centerLabel}
-        </text>
+          {/* Lines */}
+          <path d={incomePath} fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" className="chart-line" />
+          <path d={expensePath} fill="none" stroke="#F43F5E" strokeWidth="2" strokeLinecap="round" className="chart-line" />
+        </g>
       </svg>
-      <div className="donut-legend">
-        {data.map((d, i) => (
-          <div className="legend-item" key={i}>
-            <span className="legend-dot" style={{ backgroundColor: d.color }}></span>
-            <span className="legend-label">{d.label}</span>
-            <span className="legend-percent">{((d.value / total) * 100).toFixed(0)}%</span>
+      <div className="x-axis">
+        <span>Tuần 1</span>
+        <span>Tuần 2</span>
+        <span>Tuần 3</span>
+        <span>Tuần 4</span>
+      </div>
+    </div>
+  )
+}
+
+export function PieChart() {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setTimeout(() => setMounted(true), 100)
+  }, [])
+
+  const data = [
+    { color: '#F97316', percent: 40, label: 'Ăn uống', amount: '2.560.000' },
+    { color: '#3B82F6', percent: 25, label: 'Đi lại', amount: '1.600.000' },
+    { color: '#8B5CF6', percent: 20, label: 'Tiền nhà', amount: '1.280.000' },
+    { color: '#EC4899', percent: 15, label: 'Mua sắm', amount: '960.000' },
+  ]
+
+  let cumulativePercent = 0
+
+  const getCoordinatesForPercent = (percent) => {
+    const x = Math.cos(2 * Math.PI * percent)
+    const y = Math.sin(2 * Math.PI * percent)
+    return [x, y]
+  }
+
+  return (
+    <div className="pie-container">
+      <div className="pie-svg-wrapper">
+        <svg viewBox="-1 -1 2 2" className="pie-svg" style={{ transform: 'rotate(-90deg)' }}>
+          {data.map((slice, i) => {
+            const startX = getCoordinatesForPercent(cumulativePercent)[0]
+            const startY = getCoordinatesForPercent(cumulativePercent)[1]
+            cumulativePercent += slice.percent / 100
+            const endX = getCoordinatesForPercent(cumulativePercent)[0]
+            const endY = getCoordinatesForPercent(cumulativePercent)[1]
+            const largeArcFlag = slice.percent > 50 ? 1 : 0
+            const pathData = [
+              `M ${startX} ${startY}`,
+              `A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+              `L 0 0`,
+            ].join(' ')
+
+            return (
+              <path
+                key={i}
+                d={pathData}
+                fill={slice.color}
+                className={`pie-slice ${mounted ? 'draw' : ''}`}
+                style={{ transitionDelay: `${i * 100}ms` }}
+              />
+            )
+          })}
+          <circle cx="0" cy="0" r="0.75" fill="#FFFFFF" />
+        </svg>
+        <div className="pie-center">
+          <span className="pie-center-amount">6.4M</span>
+          <span className="pie-center-label">Tổng chi</span>
+        </div>
+      </div>
+      <div className="pie-legend">
+        {data.map((item, i) => (
+          <div key={i} className="legend-item">
+            <div className="legend-left">
+              <div className="legend-dot" style={{ backgroundColor: item.color }}></div>
+              <span className="legend-label">{item.label}</span>
+            </div>
+            <div className="legend-right">
+              <span className="legend-amount">{item.amount}</span>
+              <span className="legend-percent">{item.percent}%</span>
+            </div>
           </div>
         ))}
       </div>
     </div>
-  );
+  )
 }
 
-export function BarChart({ data, height = 200 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!data || data.length === 0) return null;
-  const maxVal = Math.max(...data.flatMap(d => [d.income || 0, d.expense || 0]), 1);
-  const width = 400;
-  const padding = { top: 20, right: 20, bottom: 40, left: 40 };
-  const chartW = width - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
-  const barGroupWidth = chartW / data.length;
-  const barWidth = Math.min(barGroupWidth * 0.3, 20);
-  const gap = 4;
+export function ProgressBar({ percent, color, label }) {
+  const isWarning = percent > 80
+  const isDanger = percent > 100
+  const barColor = isDanger ? '#EF4444' : (isWarning ? '#F59E0B' : (color || '#2563EB'))
+  const width = Math.min(percent, 100)
 
   return (
-    <div className="bar-chart-wrapper" style={{ height }}>
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="income-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-income)" />
-            <stop offset="100%" stopColor="var(--color-income)" stopOpacity="0.5" />
-          </linearGradient>
-          <linearGradient id="expense-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-expense)" />
-            <stop offset="100%" stopColor="var(--color-expense)" stopOpacity="0.5" />
-          </linearGradient>
-        </defs>
-        {data.map((d, i) => {
-          const groupX = padding.left + i * barGroupWidth + barGroupWidth / 2;
-          const incomeH = ((d.income || 0) / maxVal) * chartH;
-          const expenseH = ((d.expense || 0) / maxVal) * chartH;
-          return (
-            <g key={i}>
-              <rect
-                x={groupX - barWidth - gap / 2}
-                y={mounted ? height - padding.bottom - incomeH : height - padding.bottom}
-                width={barWidth}
-                height={mounted ? incomeH : 0}
-                fill="url(#income-grad)"
-                rx="4"
-                className="bar-rect"
-              />
-              <rect
-                x={groupX + gap / 2}
-                y={mounted ? height - padding.bottom - expenseH : height - padding.bottom}
-                width={barWidth}
-                height={mounted ? expenseH : 0}
-                fill="url(#expense-grad)"
-                rx="4"
-                className="bar-rect"
-              />
-              <text
-                x={groupX}
-                y={height - padding.bottom + 20}
-                fill="var(--text-secondary)"
-                fontSize="12"
-                textAnchor="middle"
-              >
-                {d.label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
-}
-
-export function ProgressBar({ value, max, color, showLabel = true, height = 8 }) {
-  const percent = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  const isWarning = percent > 80;
-  const isDanger = percent > 100;
-  
-  let finalColor = color;
-  if (isDanger) finalColor = "var(--color-expense)";
-  else if (isWarning) finalColor = "var(--color-warning)";
-
-  return (
-    <div className="progress-wrapper">
-      {showLabel && (
-        <div className="progress-labels">
-          <span>{formatMoney(value)}</span>
-          <span className="progress-max">{percent.toFixed(0)}% / {formatMoney(max)}</span>
-        </div>
-      )}
-      <div className="progress-track" style={{ height, background: "rgba(255,255,255,0.05)", borderRadius: height/2 }}>
-        <div
+    <div className="progress-container">
+      {label && <div className="progress-label">{label}</div>}
+      <div className="progress-track">
+        <div 
           className="progress-fill"
-          style={{
-            width: `${percent}%`,
-            height: "100%",
-            background: finalColor,
-            borderRadius: height/2,
-            transition: "width 0.5s ease-out, background 0.3s",
-            boxShadow: `0 0 8px ${finalColor}80`
-          }}
-        />
+          style={{ width: `${width}%`, backgroundColor: barColor }}
+        ></div>
       </div>
     </div>
-  );
+  )
 }
 
-export function Sparkline({ data, color = "#667EEA", width = 120, height = 40 }) {
-  if (!data || data.length === 0) return null;
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data, 0);
-  const range = max - min || 1;
-  const padding = 4;
-  const chartW = width - padding * 2;
-  const chartH = height - padding * 2;
-
-  const points = data.map((val, i) => {
-    const x = padding + (i / (data.length - 1)) * chartW;
-    const y = padding + chartH - ((val - min) / range) * chartH;
-    return `${x},${y}`;
-  }).join(" ");
-
-  const areaPoints = `${padding},${height} ${points} ${width - padding},${height}`;
+export function MiniChart({ color, data }) {
+  const defaultData = [10, 25, 15, 40, 30, 50, 45, 60]
+  const pts = data || defaultData
+  const max = Math.max(...pts)
+  
+  const path = pts.reduce((acc, val, i) => {
+    const x = (i / (pts.length - 1)) * 60
+    const y = 24 - (val / max) * 24
+    return i === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`
+  }, "")
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-      <defs>
-        <linearGradient id={`spark-grad-${color}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={areaPoints} fill={`url(#spark-grad-${color})`} />
-      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" />
-      <circle cx={padding + chartW} cy={padding + chartH - ((data[data.length - 1] - min) / range) * chartH} r="3" fill={color} />
+    <svg width="60" height="24" className="mini-chart">
+      <path d={path} fill="none" stroke={color || "#2563EB"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-  );
+  )
 }
-

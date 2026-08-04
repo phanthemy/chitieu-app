@@ -1,67 +1,106 @@
-import { LayoutDashboard, ArrowLeftRight, Plus, PieChart, User, LogOut } from "lucide-react";
-import "./Navbar.css";
+import React, { useState, useEffect } from 'react'
+import { LayoutDashboard, Receipt, PieChart, Plus, LogOut, User } from 'lucide-react'
+import './Navbar.css'
 
-const Navbar = ({ route, navigate, onLogout, user }) => {
+export default function Navbar({ route, navigate, onLogout, user }) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const navItems = [
-    { id: "dashboard", path: "/dashboard", icon: LayoutDashboard, label: "Tổng quan" },
-    { id: "transactions", path: "/transactions", icon: ArrowLeftRight, label: "Giao dịch" },
-    { id: "add", path: "/add", icon: Plus, label: "Thêm mới", isAdd: true },
-    { id: "budget", path: "/budget", icon: PieChart, label: "Ngân sách" },
-  ];
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Tổng quan' },
+    { path: '/transactions', icon: Receipt, label: 'Giao dịch' },
+    { path: '/add', icon: Plus, label: 'Thêm mới', isFab: true },
+    { path: '/budget', icon: PieChart, label: 'Ngân sách' },
+    { path: '#logout', icon: LogOut, label: 'Đăng xuất', onClick: onLogout }
+  ]
+
+  if (isMobile) {
+    return (
+      <nav className="bottom-nav">
+        {navItems.map((item, index) => {
+          const isActive = route === item.path
+          const Icon = item.icon
+          
+          if (item.isFab) {
+            return (
+              <button 
+                key={index} 
+                className="bottom-nav-fab-wrapper"
+                onClick={() => navigate('/add')}
+              >
+                <div className="bottom-nav-fab">
+                  <Icon size={24} color="white" />
+                </div>
+              </button>
+            )
+          }
+
+          return (
+            <button 
+              key={index}
+              className={`bottom-nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => item.onClick ? item.onClick() : navigate(item.path)}
+            >
+              <Icon size={24} />
+              {isActive && <div className="active-dot"></div>}
+            </button>
+          )
+        })}
+      </nav>
+    )
+  }
 
   return (
-    <>
-      {/* Desktop Sidebar */}
-      <nav className="desktop-sidebar">
+    <nav className="sidebar">
+      <div className="sidebar-top">
         <div className="brand-logo">
-          <div className="logo-icon">S</div>
+          <div className="logo-circle">S</div>
+          <span className="brand-text title-font">SpendWise</span>
         </div>
         
-        <div className="nav-menu">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              className={`nav-item ${route === item.path ? "active" : ""}`}
-              onClick={() => navigate(item.path)}
-              title={item.label}
-            >
-              <item.icon size={24} />
-              <span className="tooltip">{item.label}</span>
-            </button>
-          ))}
+        <div className="nav-links">
+          {navItems.filter(i => !i.isFab && !i.onClick).map((item, index) => {
+            const isActive = route === item.path
+            const Icon = item.icon
+            return (
+              <button
+                key={index}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => navigate(item.path)}
+                title={item.label}
+              >
+                <div className="icon-wrapper">
+                  <Icon size={22} />
+                </div>
+                <span className="nav-label">{item.label}</span>
+              </button>
+            )
+          })}
         </div>
-
-        <div className="nav-bottom">
-          <div className="user-profile" title={user?.name || "User"}>
-            <User size={24} />
+      </div>
+      
+      <div className="sidebar-bottom">
+        <div className="user-profile">
+          <div className="avatar">
+            <User size={20} />
           </div>
-          <button className="nav-item logout-btn" onClick={onLogout} title="Đăng xuất">
-            <LogOut size={24} />
-            <span className="tooltip">Đăng xuất</span>
-          </button>
+          <div className="user-info">
+            <span className="user-name">{user?.name || 'User'}</span>
+            <span className="user-email">{user?.email || 'user@example.com'}</span>
+          </div>
         </div>
-      </nav>
-
-      {/* Mobile Bottom Bar */}
-      <nav className="mobile-bottom-bar">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            className={`mobile-nav-item ${route === item.path ? "active" : ""} ${item.isAdd ? "mobile-add-btn" : ""}`}
-            onClick={() => navigate(item.path)}
-          >
-            <item.icon size={item.isAdd ? 28 : 24} />
-            {!item.isAdd && <span>{item.label}</span>}
-          </button>
-        ))}
-        <button className="mobile-nav-item" onClick={onLogout}>
-          <User size={24} />
-          <span>Hồ sơ</span>
+        <button className="nav-item logout" onClick={onLogout} title="Đăng xuất">
+          <div className="icon-wrapper">
+            <LogOut size={22} />
+          </div>
+          <span className="nav-label">Đăng xuất</span>
         </button>
-      </nav>
-    </>
-  );
-};
-
-export default Navbar;
-
+      </div>
+    </nav>
+  )
+}

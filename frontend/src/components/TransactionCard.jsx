@@ -1,70 +1,47 @@
-import { Wallet, Utensils, Car, Home, ShoppingBag, Zap, Heart, Gamepad2, Laptop, MoreHorizontal, X } from "lucide-react";
-import "./TransactionCard.css";
+import React from 'react'
+import { Utensils, Car, Home, Gamepad2, Heart, ShoppingBag, Zap, Wallet, Laptop, MoreHorizontal, X } from 'lucide-react'
+import './TransactionCard.css'
 
-const categoryIcons = {
-  salary: Wallet,
-  food: Utensils,
-  transport: Car,
-  rent: Home,
-  shopping: ShoppingBag,
-  bills: Zap,
-  health: Heart,
-  entertainment: Gamepad2,
-  freelance: Laptop,
-  other: MoreHorizontal,
-};
+export default function TransactionCard({ transaction, onDelete }) {
+  const isIncome = transaction.type === 'income'
+  
+  const categoryConfig = {
+    food: { icon: Utensils, color: '#F97316', bg: 'rgba(249, 115, 22, 0.1)', label: 'Ăn uống' },
+    transport: { icon: Car, color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)', label: 'Đi lại' },
+    rent: { icon: Home, color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)', label: 'Tiền nhà' },
+    shopping: { icon: ShoppingBag, color: '#EC4899', bg: 'rgba(236, 72, 153, 0.1)', label: 'Mua sắm' },
+    bills: { icon: Zap, color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.1)', label: 'Hóa đơn' },
+    health: { icon: Heart, color: '#22C55E', bg: 'rgba(34, 197, 94, 0.1)', label: 'Sức khỏe' },
+    entertainment: { icon: Gamepad2, color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)', label: 'Giải trí' },
+    salary: { icon: Wallet, color: '#2563EB', bg: 'rgba(37, 99, 235, 0.1)', label: 'Lương' },
+    freelance: { icon: Laptop, color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)', label: 'Freelance' },
+    other: { icon: MoreHorizontal, color: '#6B7280', bg: 'rgba(107, 114, 128, 0.1)', label: 'Khác' }
+  }
 
-const categoryNames = {
-  salary: "Lương",
-  food: "Ăn uống",
-  transport: "Đi lại",
-  rent: "Thuê nhà",
-  shopping: "Mua sắm",
-  bills: "Hóa đơn",
-  health: "Sức khỏe",
-  entertainment: "Giải trí",
-  freelance: "Freelance",
-  other: "Khác",
-};
+  const config = categoryConfig[transaction.category] || categoryConfig.other
+  const Icon = config.icon
 
-const categoryColors = {
-  salary: "#34D399",
-  food: "#F87171",
-  transport: "#FBBF24",
-  rent: "#60A5FA",
-  shopping: "#A78BFA",
-  bills: "#38BDF8",
-  health: "#34D399",
-  entertainment: "#F472B6",
-  freelance: "#34D399",
-  other: "#94A3B8",
-};
-
-const TransactionCard = ({ transaction, onDelete }) => {
-  const Icon = categoryIcons[transaction.category] || MoreHorizontal;
-  const isIncome = transaction.type === "income";
-  const amountStr = new Intl.NumberFormat("vi-VN").format(transaction.amount);
+  const formattedAmount = new Intl.NumberFormat('vi-VN').format(transaction.amount) + ' ₫'
+  const prefix = isIncome ? '+' : '-'
 
   return (
-    <div className="transaction-card glass-card">
+    <div className="transaction-row fade-in-up">
       <div className="tx-left">
-        <div 
-          className="tx-icon" 
-          style={{ 
-            background: `linear-gradient(135deg, ${categoryColors[transaction.category]}80, ${categoryColors[transaction.category]}40)` 
-          }}
-        >
-          <Icon size={20} color={categoryColors[transaction.category]} />
+        <div className="tx-icon" style={{ backgroundColor: config.bg, color: config.color }}>
+          <Icon size={20} />
         </div>
-        <div className="tx-details">
-          <div className="tx-note">{transaction.note}</div>
-          <div className="tx-category">{categoryNames[transaction.category] || "Khác"}</div>
+        <div className="tx-info">
+          <span className="tx-note">{transaction.note || config.label}</span>
+          <span className="tx-category">{config.label}</span>
         </div>
       </div>
       
       <div className="tx-right">
-        <div className={`tx-amount mono ${isIncome ? "text-income" : "text-expense"}`}>
-          {isIncome ? "+" : "-"}{amountStr} ₫
+        <div className="tx-amounts">
+          <span className={`tx-amount amount-text ${isIncome ? 'income' : 'expense'}`}>
+            {prefix}{formattedAmount}
+          </span>
+          <span className="tx-date">{transaction.date}</span>
         </div>
         {onDelete && (
           <button className="tx-delete" onClick={() => onDelete(transaction.id)}>
@@ -73,8 +50,5 @@ const TransactionCard = ({ transaction, onDelete }) => {
         )}
       </div>
     </div>
-  );
-};
-
-export default TransactionCard;
-
+  )
+}

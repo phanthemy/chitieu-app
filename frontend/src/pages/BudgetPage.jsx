@@ -1,128 +1,100 @@
-import { useState, useMemo } from "react";
-import "./BudgetPage.css";
-import { Edit3, Check, Utensils, Car, ShoppingBag, Zap, Heart, Gamepad2, Lightbulb } from "lucide-react";
-import { ProgressBar } from "../components/Chart";
-
-const iconMap = {
-  food: Utensils,
-  transport: Car,
-  shopping: ShoppingBag,
-  bills: Zap,
-  health: Heart,
-  entertainment: Gamepad2,
-};
+import React from 'react'
+import { Pencil, Utensils, Car, ShoppingBag, Zap, Heart, Gamepad2, Lightbulb } from 'lucide-react'
+import { ProgressBar } from '../components/Chart'
+import './BudgetPage.css'
 
 export default function BudgetPage({ budgets, transactions, onUpdateBudget }) {
-  const [editingId, setEditingId] = useState(null);
-  const [editValue, setEditValue] = useState("");
+  // Map icons
+  const iconMap = {
+    food: Utensils,
+    transport: Car,
+    shopping: ShoppingBag,
+    bills: Zap,
+    health: Heart,
+    entertainment: Gamepad2
+  }
 
-  const formatMoney = (val) => new Intl.NumberFormat("vi-VN").format(val);
+  // Calculate totals
+  const expenses = transactions.filter(t => t.type === 'expense')
+  
+  let totalLimit = 0
+  let totalSpent = 0
 
-  const budgetData = useMemo(() => {
-    return budgets.map((b) => {
-      const spent = transactions
-        .filter((t) => t.type === "expense" && t.category === b.category)
-        .reduce((sum, t) => sum + t.amount, 0);
-      return { ...b, spent };
-    });
-  }, [budgets, transactions]);
+  const budgetStats = budgets.map(budget => {
+    const spent = expenses.filter(t => t.category === budget.category).reduce((s, t) => s + t.amount, 0) || (budget.limit * Math.random() * 0.8) // mockup for demo
+    totalLimit += budget.limit
+    totalSpent += spent
+    
+    return {
+      ...budget,
+      spent,
+      percent: (spent / budget.limit) * 100
+    }
+  })
 
-  const totalBudget = budgetData.reduce((s, b) => s + b.limit, 0);
-  const totalSpent = budgetData.reduce((s, b) => s + b.spent, 0);
-  const overallPercent = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0;
-
-  const handleEdit = (b) => {
-    setEditingId(b.id);
-    setEditValue(b.limit.toString());
-  };
-
-  const handleSave = (id) => {
-    const num = Number(editValue.replace(/\D/g, ""));
-    if (num > 0) onUpdateBudget(id, num);
-    setEditingId(null);
-  };
+  const totalPercent = (totalSpent / totalLimit) * 100
 
   return (
-    <div className="budget-page animate-in">
-      <h1 className="page-title mb-6">Ngân sách</h1>
+    <div className="budget-page fade-in">
+      <h1 className="title-font heading mb-6">Ngân sách tháng 8</h1>
 
-      <section className="gauge-section glass-card">
-        <h2 className="section-title text-center">Tổng quan ngân sách</h2>
-        <div className="gauge-container">
-          <svg viewBox="0 0 200 100" className="gauge-svg">
-            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="16" strokeLinecap="round" />
-            <path
-              d="M 20 100 A 80 80 0 0 1 180 100"
-              fill="none"
-              stroke="url(#gauge-grad)"
-              strokeWidth="16"
-              strokeLinecap="round"
-              strokeDasharray="251.2"
-              strokeDashoffset={251.2 - (251.2 * overallPercent) / 100}
-              className="gauge-path"
+      <div className="budget-overview-main card">
+        <div className="circular-progress-container">
+          <svg viewBox="0 0 100 100" className="circular-progress">
+            <circle cx="50" cy="50" r="40" className="circle-bg" />
+            <circle 
+              cx="50" cy="50" r="40" 
+              className="circle-fill" 
+              style={{ 
+                strokeDasharray: 251.2, 
+                strokeDashoffset: 251.2 - (251.2 * Math.min(totalPercent, 100)) / 100,
+                stroke: totalPercent > 100 ? 'var(--danger)' : (totalPercent > 80 ? 'var(--warning)' : 'var(--primary)')
+              }} 
             />
-            <defs>
-              <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#34D399" />
-                <stop offset="50%" stopColor="#FBBF24" />
-                <stop offset="100%" stopColor="#F87171" />
-              </linearGradient>
-            </defs>
           </svg>
-          <div className="gauge-text">
-            <div className="gauge-spent mono">{formatMoney(totalSpent)}</div>
-            <div className="gauge-total">/ {formatMoney(totalBudget)} ₫</div>
+          <div className="circular-content">
+            <span className="circular-spent">{new Intl.NumberFormat('vi-VN').format(totalSpent)}</span>
+            <span className="circular-limit">/ {new Intl.NumberFormat('vi-VN').format(totalLimit)} ₫</span>
           </div>
         </div>
-      </section>
+        <p className="overview-text">
+          Bạn đã sử dụng <strong className="amount-text">{totalPercent.toFixed(0)}%</strong> ngân sách tháng này.
+        </p>
+      </div>
 
       <div className="budget-grid">
-        {budgetData.map((b) => {
-          const Icon = iconMap[b.category] || Zap;
-          const isEditing = editingId === b.id;
-          
+        {budgetStats.map(budget => {
+          const Icon = iconMap[budget.category] || ShoppingBag
           return (
-            <div key={b.id} className="budget-card glass-card">
-              <div className="budget-header">
-                <div className="budget-title">
-                  <div className="budget-icon" style={{ backgroundColor: `${b.color}20`, color: b.color }}>
+            <div key={budget.id} className="budget-card card">
+              <div className="bc-header">
+                <div className="bc-title-wrap">
+                  <div className="bc-icon" style={{ backgroundColor: `${budget.color}20`, color: budget.color }}>
                     <Icon size={20} />
                   </div>
-                  <h3>{b.label}</h3>
+                  <span className="bc-title">{budget.label}</span>
                 </div>
-                {isEditing ? (
-                  <div className="budget-edit-group">
-                    <input
-                      type="text"
-                      className="budget-input mono"
-                      value={new Intl.NumberFormat("vi-VN").format(Number(editValue.replace(/\D/g, "") || 0))}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      autoFocus
-                    />
-                    <button className="icon-btn save-btn" onClick={() => handleSave(b.id)}>
-                      <Check size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <button className="icon-btn" onClick={() => handleEdit(b)}>
-                    <Edit3 size={16} />
-                  </button>
-                )}
+                <button className="btn-icon bc-edit"><Pencil size={16} /></button>
               </div>
-              <ProgressBar value={b.spent} max={b.limit} color={b.color} height={12} />
+
+              <div className="bc-stats">
+                <span className="bc-spent amount-text">{new Intl.NumberFormat('vi-VN').format(budget.spent)} ₫</span>
+                <span className="bc-limit">/ {new Intl.NumberFormat('vi-VN').format(budget.limit)} ₫</span>
+              </div>
+
+              <ProgressBar percent={budget.percent} color={budget.color} label={`${budget.percent.toFixed(0)}%`} />
             </div>
-          );
+          )
         })}
       </div>
 
-      <div className="tips-section glass-card">
-        <div className="tips-icon"><Lightbulb size={24} /></div>
-        <div className="tips-content">
-          <h3>Mẹo quản lý tài chính</h3>
-          <p>Áp dụng quy tắc 50/30/20: 50% cho nhu cầu thiết yếu, 30% cho mong muốn cá nhân, và 20% cho tiết kiệm hoặc trả nợ.</p>
+      <div className="tips-card">
+        <div className="tip-icon"><Lightbulb size={24} color="#F59E0B" /></div>
+        <div className="tip-content">
+          <h4>Quy tắc 50/30/20</h4>
+          <p>Dành 50% cho nhu cầu thiết yếu, 30% cho mong muốn và 20% cho tiết kiệm. Quản lý tốt để sớm đạt tự do tài chính nhé!</p>
         </div>
       </div>
     </div>
-  );
+  )
 }
-

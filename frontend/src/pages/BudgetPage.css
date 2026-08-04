@@ -1,4 +1,3 @@
-
 .budget-page {
   display: flex;
   flex-direction: column;
@@ -9,48 +8,68 @@
   margin-bottom: 24px;
 }
 
-.gauge-section {
-  padding: 32px;
+.budget-overview-main {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 40px 24px;
 }
 
-.gauge-container {
+.circular-progress-container {
   position: relative;
-  width: 300px;
-  height: 150px;
-  margin-top: 24px;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 24px;
 }
 
-.gauge-svg {
+.circular-progress {
   width: 100%;
   height: 100%;
+  transform: rotate(-90deg);
 }
 
-.gauge-path {
-  transition: stroke-dashoffset 1s ease-out;
+.circle-bg {
+  fill: none;
+  stroke: var(--bg-elevated);
+  stroke-width: 8;
 }
 
-.gauge-text {
+.circle-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-out, stroke 0.3s ease;
+}
+
+.circular-content {
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.gauge-spent {
-  font-size: 32px;
+.circular-spent {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
   font-weight: 700;
   color: var(--text-primary);
-  line-height: 1;
 }
 
-.gauge-total {
+.circular-limit {
   font-size: 14px;
+  color: var(--text-muted);
+}
+
+.overview-text {
+  font-size: 16px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  text-align: center;
 }
 
 .budget-grid {
@@ -59,110 +78,88 @@
   gap: 20px;
 }
 
-@media (max-width: 768px) {
-  .budget-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .budget-card {
-  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.budget-header {
+.bc-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
-.budget-title {
+.bc-title-wrap {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.budget-icon {
+.bc-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.budget-title h3 {
-  font-size: 16px;
+.bc-title {
   font-weight: 600;
+  font-size: 16px;
 }
 
-.icon-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
+.bc-edit {
+  width: 32px;
+  height: 32px;
+}
+
+.bc-stats {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.icon-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-}
-
-.budget-edit-group {
-  display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
 }
 
-.budget-input {
-  width: 120px;
-  padding: 4px 8px;
-  text-align: right;
+.bc-spent {
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.bc-limit {
   font-size: 14px;
+  color: var(--text-muted);
 }
 
-.save-btn {
-  background: rgba(52, 211, 153, 0.15);
-  color: var(--color-income);
-}
-.save-btn:hover {
-  background: var(--color-income);
-  color: white;
-}
-
-.tips-section {
+.tips-card {
   display: flex;
-  align-items: flex-start;
   gap: 16px;
+  background-color: var(--primary-light);
+  border-radius: var(--radius);
   padding: 24px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border-color: rgba(102, 126, 234, 0.2);
+  margin-top: 16px;
 }
 
-.tips-icon {
-  color: var(--accent-primary);
-  background: rgba(102, 126, 234, 0.1);
-  padding: 12px;
-  border-radius: 12px;
+.tip-icon {
+  flex-shrink: 0;
 }
 
-.tips-content h3 {
+.tip-content h4 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
   margin-bottom: 8px;
-  color: var(--accent-primary);
 }
 
-.tips-content p {
-  color: var(--text-secondary);
+.tip-content p {
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
+@media (max-width: 768px) {
+  .budget-grid {
+    grid-template-columns: 1fr;
+  }
+}

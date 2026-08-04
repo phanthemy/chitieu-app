@@ -1,105 +1,107 @@
-import { useState, useMemo } from "react";
-import "./TransactionList.css";
-import TransactionCard from "../components/TransactionCard";
-import { Search, Filter } from "lucide-react";
+import React, { useState } from 'react'
+import { Search, Filter, ArrowUpDown } from 'lucide-react'
+import TransactionCard from '../components/TransactionCard'
+import './TransactionList.css'
 
 export default function TransactionList({ transactions, onDelete }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
+  const [filter, setFilter] = useState('all') // all, income, expense
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredAndSorted = useMemo(() => {
-    let result = transactions.filter((t) => {
-      const matchSearch = t.note.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchType = filterType === "all" || t.type === filterType;
-      return matchSearch && matchType;
-    });
+  const filteredTx = transactions
+    .filter(t => filter === 'all' ? true : t.type === filter)
+    .filter(t => 
+      t.note?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      t.category.toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
-    result.sort((a, b) => {
-      if (sortBy === "newest") return new Date(b.date) - new Date(a.date);
-      if (sortBy === "oldest") return new Date(a.date) - new Date(b.date);
-      if (sortBy === "amount_desc") return b.amount - a.amount;
-      if (sortBy === "amount_asc") return a.amount - b.amount;
-      return 0;
-    });
+  // Group by date
+  const groupedTx = filteredTx.reduce((acc, tx) => {
+    if (!acc[tx.date]) acc[tx.date] = []
+    acc[tx.date].push(tx)
+    return acc
+  }, {})
 
-    return result;
-  }, [transactions, searchTerm, filterType, sortBy]);
+  // Sort dates descending
+  const sortedDates = Object.keys(groupedTx).sort((a, b) => new Date(b) - new Date(a))
 
-  const grouped = useMemo(() => {
-    const groups = {};
-    filteredAndSorted.forEach((t) => {
-      if (!groups[t.date]) groups[t.date] = [];
-      groups[t.date].push(t);
-    });
-    return groups;
-  }, [filteredAndSorted]);
-
-  const formatMoney = (val) => new Intl.NumberFormat("vi-VN").format(val);
+  const totalFiltered = filteredTx.length
+  const sumFiltered = filteredTx.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum - t.amount, 0)
 
   return (
-    <div className="transaction-list-page animate-in">
-      <header className="page-header">
-        <div className="title-row">
-          <h1 className="page-title">Giao dịch</h1>
-          <span className="count-badge">{filteredAndSorted.length}</span>
-        </div>
-        
-        <div className="search-bar glass-card">
+    <div className="transaction-list-page fade-in">
+      <div className="tx-page-header">
+        <h1 className="title-font heading">Giao dịch <span className="count-badge">{totalFiltered}</span></h1>
+      </div>
+
+      <div className="tx-controls">
+        <div className="search-bar">
           <Search size={20} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm giao dịch..."
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm giao dịch..." 
+            className="input search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </header>
 
-      <div className="filters-row">
-        <div className="type-filters">
-          <button className={`filter-pill ${filterType === "all" ? "active" : ""}`} onClick={() => setFilterType("all")}>Tất cả</button>
-          <button className={`filter-pill ${filterType === "income" ? "active" : ""}`} onClick={() => setFilterType("income")}>Thu nhập</button>
-          <button className={`filter-pill ${filterType === "expense" ? "active" : ""}`} onClick={() => setFilterType("expense")}>Chi tiêu</button>
-        </div>
-        
-        <div className="sort-dropdown glass-card">
-          <Filter size={16} />
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="newest">Mới nhất</option>
-            <option value="oldest">Cũ nhất</option>
-            <option value="amount_desc">Nhiều nhất</option>
-            <option value="amount_asc">Ít nhất</option>
-          </select>
+        <div className="filter-pills">
+          <button 
+            className={`filter-pill ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            Tất cả
+          </button>
+          <button 
+            className={`filter-pill ${filter === 'income' ? 'active' : ''}`}
+            onClick={() => setFilter('income')}
+          >
+            Thu nhập
+          </button>
+          <button 
+            className={`filter-pill ${filter === 'expense' ? 'active' : ''}`}
+            onClick={() => setFilter('expense')}
+          >
+            Chi tiêu
+          </button>
         </div>
       </div>
 
-      <div className="transactions-container">
-        {Object.entries(grouped).map(([date, txs]) => {
-          const dailyTotal = txs.reduce((sum, t) => sum + (t.type === "income" ? t.amount : -t.amount), 0);
-          return (
-            <div key={date} className="date-group">
-              <div className="date-header">
-                <span className="date-label">{new Date(date).toLocaleDateString("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" })}</span>
-                <span className={`date-total mono ${dailyTotal >= 0 ? "text-income" : "text-expense"}`}>
-                  {dailyTotal > 0 ? "+" : ""}{formatMoney(dailyTotal)} ₫
-                </span>
-              </div>
-              <div className="date-txs">
-                {txs.map((t) => (
-                  <TransactionCard key={t.id} transaction={t} onDelete={onDelete} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-        {filteredAndSorted.length === 0 && (
+      <div className="tx-summary-bar">
+        <span>Tổng cộng:</span>
+        <span className={`amount-text ${sumFiltered >= 0 ? 'text-success' : 'text-danger'}`}>
+          {sumFiltered >= 0 ? '+' : ''}{new Intl.NumberFormat('vi-VN').format(sumFiltered)} ₫
+        </span>
+      </div>
+
+      <div className="tx-grouped-list">
+        {sortedDates.length === 0 ? (
           <div className="empty-state">
             <p>Không tìm thấy giao dịch nào</p>
           </div>
+        ) : (
+          sortedDates.map(date => {
+            const dayTxs = groupedTx[date]
+            const dayTotal = dayTxs.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum - t.amount, 0)
+            
+            return (
+              <div key={date} className="tx-date-group">
+                <div className="date-divider">
+                  <span className="date-label">{date}</span>
+                  <span className="date-total amount-text">
+                    {dayTotal >= 0 ? '+' : ''}{new Intl.NumberFormat('vi-VN').format(dayTotal)} ₫
+                  </span>
+                </div>
+                <div className="card tx-card-container">
+                  {dayTxs.map(tx => (
+                    <TransactionCard key={tx.id} transaction={tx} onDelete={onDelete} />
+                  ))}
+                </div>
+              </div>
+            )
+          })
         )}
       </div>
     </div>
-  );
+  )
 }
-

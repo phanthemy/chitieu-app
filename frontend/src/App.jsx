@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Plus } from 'lucide-react'
 import Navbar from './components/Navbar'
 import LoginPage from './pages/LoginPage'
 import Dashboard from './pages/Dashboard'
@@ -44,12 +45,12 @@ function App() {
   ])
 
   const [budgets, setBudgets] = useState([
-    { id: 1, category: 'food', label: 'Ăn uống', limit: 3000000, color: '#ff6b6b' },
-    { id: 2, category: 'transport', label: 'Đi lại', limit: 1500000, color: '#ffa726' },
-    { id: 3, category: 'shopping', label: 'Mua sắm', limit: 2000000, color: '#a855f7' },
-    { id: 4, category: 'bills', label: 'Hóa đơn', limit: 2000000, color: '#0984e3' },
-    { id: 5, category: 'health', label: 'Sức khỏe', limit: 1000000, color: '#26de81' },
-    { id: 6, category: 'entertainment', label: 'Giải trí', limit: 1000000, color: '#00cec9' },
+    { id: 1, category: 'food', label: 'Ăn uống', limit: 3000000, color: '#F97316' },
+    { id: 2, category: 'transport', label: 'Đi lại', limit: 1500000, color: '#3B82F6' },
+    { id: 3, category: 'shopping', label: 'Mua sắm', limit: 2000000, color: '#EC4899' },
+    { id: 4, category: 'bills', label: 'Hóa đơn', limit: 2000000, color: '#06B6D4' },
+    { id: 5, category: 'health', label: 'Sức khỏe', limit: 1000000, color: '#22C55E' },
+    { id: 6, category: 'entertainment', label: 'Giải trí', limit: 1000000, color: '#F59E0B' },
   ])
 
   const handleLogin = (userData) => {
@@ -107,9 +108,16 @@ function App() {
   return (
     <div className="app-container">
       {showNavbar && <Navbar route={route} navigate={navigate} onLogout={handleLogout} user={user} />}
-      <main className={showNavbar ? 'main-content' : 'main-content full-width'}>
-        {renderPage()}
-      </main>
+      <div className={showNavbar ? 'main-wrapper' : 'main-wrapper full-width'} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <main className={showNavbar ? 'main-content' : 'main-content full-width'}>
+          {renderPage()}
+        </main>
+      </div>
+      {showNavbar && route !== '/add' && (
+        <button className="fab" onClick={() => navigate('/add')}>
+          <Plus size={24} />
+        </button>
+      )}
     </div>
   )
 }
