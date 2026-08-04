@@ -12,3 +12,7 @@
 - **Nguyên nhân**: Sub-agent dùng `Chrome` icon từ lucide-react nhưng icon này không tồn tại trong thư viện. Lucide dùng tên icon khác.
 - **Cách khắc phục**: Thay `Chrome` bằng `Globe` icon từ lucide-react cho nút "Tiếp tục với Google".
 
+- **[2026-08-04 22:02] [QA]** Lỗi: Site trắng tinh trên production - JS/CSS không load được
+- **Nguyên nhân**: Folder `assets/` trên VPS có permission `drwx------` (700) → Nginx worker chạy user `www-data` không đọc được file. Do `scp` tạo folder với umask restrictive.
+- **Cách khắc phục**: `chmod -R 755 /var/www/chitieu/frontend/dist/` + restart nginx. Thêm Cloudflare cache cần purge vì đã cache response lỗi.
+- **Bài học**: QA cần verify VISUAL trên production (chụp screenshot), không chỉ check build pass.
