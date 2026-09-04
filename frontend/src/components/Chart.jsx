@@ -1,146 +1,61 @@
-import React, { useEffect, useState } from 'react'
+import { useRef, useEffect } from 'react'
 import './Chart.css'
 
-export function AreaChart() {
-  const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setTimeout(() => setMounted(true), 100)
-  }, [])
-
-  // Dummy data
-  const points = [
-    { x: 0, income: 40, expense: 30 },
-    { x: 25, income: 60, expense: 45 },
-    { x: 50, income: 45, expense: 70 },
-    { x: 75, income: 80, expense: 50 },
-    { x: 100, income: 100, expense: 65 },
-  ]
-
-  const createPath = (key) => {
-    return points.reduce((acc, point, i) => {
-      if (i === 0) return `M ${point.x} ${100 - point[key]}`
-      const prev = points[i - 1]
-      const cp1x = prev.x + (point.x - prev.x) / 2
-      const cp1y = 100 - prev[key]
-      const cp2x = cp1x
-      const cp2y = 100 - point[key]
-      return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${point.x} ${100 - point[key]}`
-    }, "")
-  }
-
-  const incomePath = createPath('income')
-  const expensePath = createPath('expense')
-
-  const incomeFill = `${incomePath} L 100 100 L 0 100 Z`
-  const expenseFill = `${expensePath} L 100 100 L 0 100 Z`
-
-  return (
-    <div className="chart-container">
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="area-chart-svg">
-        <defs>
-          <linearGradient id="income-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="expense-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#F43F5E" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#F43F5E" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        
-        {/* Grid */}
-        <line x1="0" y1="25" x2="100" y2="25" stroke="#F1F5F9" strokeWidth="0.5" />
-        <line x1="0" y1="50" x2="100" y2="50" stroke="#F1F5F9" strokeWidth="0.5" />
-        <line x1="0" y1="75" x2="100" y2="75" stroke="#F1F5F9" strokeWidth="0.5" />
-
-        <g className={`chart-lines ${mounted ? 'draw' : ''}`}>
-          {/* Fills */}
-          <path d={incomeFill} fill="url(#income-grad)" className="chart-fill" />
-          <path d={expenseFill} fill="url(#expense-grad)" className="chart-fill" />
-          
-          {/* Lines */}
-          <path d={incomePath} fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" className="chart-line" />
-          <path d={expensePath} fill="none" stroke="#F43F5E" strokeWidth="2" strokeLinecap="round" className="chart-line" />
-        </g>
-      </svg>
-      <div className="x-axis">
-        <span>Tuần 1</span>
-        <span>Tuần 2</span>
-        <span>Tuần 3</span>
-        <span>Tuần 4</span>
-      </div>
-    </div>
-  )
+const formatMoney = (amount) => {
+  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`
+  if (amount >= 1000) return `${(amount / 1000).toFixed(0)}K`
+  return amount.toString()
 }
 
-export function PieChart() {
-  const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setTimeout(() => setMounted(true), 100)
-  }, [])
-
-  const data = [
-    { color: '#F97316', percent: 40, label: 'Ăn uống', amount: '2.560.000' },
-    { color: '#3B82F6', percent: 25, label: 'Đi lại', amount: '1.600.000' },
-    { color: '#8B5CF6', percent: 20, label: 'Tiền nhà', amount: '1.280.000' },
-    { color: '#EC4899', percent: 15, label: 'Mua sắm', amount: '960.000' },
-  ]
-
+/* ============================================
+   Donut Chart (CSS-based)
+   ============================================ */
+export function DonutChart({ data, size = 200, centerLabel, centerValue }) {
+  // data: [{ label, value, color }]
+  const total = data.reduce((sum, d) => sum + d.value, 0)
   let cumulativePercent = 0
 
-  const getCoordinatesForPercent = (percent) => {
-    const x = Math.cos(2 * Math.PI * percent)
-    const y = Math.sin(2 * Math.PI * percent)
-    return [x, y]
-  }
+  const segments = data.map((d) => {
+    const percent = total > 0 ? (d.value / total) * 100 : 0
+    const segment = {
+      ...d,
+      percent,
+      offset: cumulativePercent,
+    }
+    cumulativePercent += percent
+    return segment
+  })
+
+  // Build conic-gradient
+  const gradientParts = segments.map(s => {
+    return `${s.color} ${s.offset}% ${s.offset + s.percent}%`
+  }).join(', ')
+
+  const gradientStyle = total > 0 
+    ? `conic-gradient(${gradientParts})`
+    : 'conic-gradient(rgba(255,255,255,0.05) 0% 100%)'
 
   return (
-    <div className="pie-container">
-      <div className="pie-svg-wrapper">
-        <svg viewBox="-1 -1 2 2" className="pie-svg" style={{ transform: 'rotate(-90deg)' }}>
-          {data.map((slice, i) => {
-            const startX = getCoordinatesForPercent(cumulativePercent)[0]
-            const startY = getCoordinatesForPercent(cumulativePercent)[1]
-            cumulativePercent += slice.percent / 100
-            const endX = getCoordinatesForPercent(cumulativePercent)[0]
-            const endY = getCoordinatesForPercent(cumulativePercent)[1]
-            const largeArcFlag = slice.percent > 50 ? 1 : 0
-            const pathData = [
-              `M ${startX} ${startY}`,
-              `A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`,
-              `L 0 0`,
-            ].join(' ')
-
-            return (
-              <path
-                key={i}
-                d={pathData}
-                fill={slice.color}
-                className={`pie-slice ${mounted ? 'draw' : ''}`}
-                style={{ transitionDelay: `${i * 100}ms` }}
-              />
-            )
-          })}
-          <circle cx="0" cy="0" r="0.75" fill="#FFFFFF" />
-        </svg>
-        <div className="pie-center">
-          <span className="pie-center-amount">6.4M</span>
-          <span className="pie-center-label">Tổng chi</span>
+    <div className="donut-wrapper">
+      <div 
+        className="donut-chart" 
+        style={{ 
+          width: size, 
+          height: size,
+          background: gradientStyle,
+        }}
+      >
+        <div className="donut-hole">
+          <span className="donut-value">{centerValue}</span>
+          <span className="donut-label">{centerLabel}</span>
         </div>
       </div>
-      <div className="pie-legend">
-        {data.map((item, i) => (
-          <div key={i} className="legend-item">
-            <div className="legend-left">
-              <div className="legend-dot" style={{ backgroundColor: item.color }}></div>
-              <span className="legend-label">{item.label}</span>
-            </div>
-            <div className="legend-right">
-              <span className="legend-amount">{item.amount}</span>
-              <span className="legend-percent">{item.percent}%</span>
-            </div>
+      <div className="donut-legend">
+        {segments.filter(s => s.percent > 0).map((s, i) => (
+          <div className="legend-item" key={i}>
+            <span className="legend-dot" style={{ background: s.color }} />
+            <span className="legend-label">{s.label}</span>
+            <span className="legend-percent">{s.percent.toFixed(0)}%</span>
           </div>
         ))}
       </div>
@@ -148,39 +63,211 @@ export function PieChart() {
   )
 }
 
-export function ProgressBar({ percent, color, label }) {
-  const isWarning = percent > 80
-  const isDanger = percent > 100
-  const barColor = isDanger ? '#EF4444' : (isWarning ? '#F59E0B' : (color || '#2563EB'))
-  const width = Math.min(percent, 100)
+/* ============================================
+   Bar Chart (Canvas-based)
+   ============================================ */
+export function BarChart({ data, height = 200 }) {
+  // data: [{ label, income, expense }]
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !data?.length) return
+    
+    const ctx = canvas.getContext('2d')
+    const dpr = window.devicePixelRatio || 1
+    const rect = canvas.getBoundingClientRect()
+    
+    canvas.width = rect.width * dpr
+    canvas.height = rect.height * dpr
+    ctx.scale(dpr, dpr)
+
+    const w = rect.width
+    const h = rect.height
+    const padding = { top: 20, right: 20, bottom: 40, left: 10 }
+    const chartW = w - padding.left - padding.right
+    const chartH = h - padding.top - padding.bottom
+
+    // Clear
+    ctx.clearRect(0, 0, w, h)
+
+    const maxVal = Math.max(...data.flatMap(d => [d.income || 0, d.expense || 0]), 1)
+    const barGroupWidth = chartW / data.length
+    const barWidth = Math.min(barGroupWidth * 0.3, 24)
+    const gap = 4
+
+    // Draw bars
+    data.forEach((d, i) => {
+      const groupX = padding.left + i * barGroupWidth + barGroupWidth / 2
+
+      // Income bar
+      const incomeH = (d.income / maxVal) * chartH
+      const incomeGrad = ctx.createLinearGradient(0, h - padding.bottom - incomeH, 0, h - padding.bottom)
+      incomeGrad.addColorStop(0, '#26de81')
+      incomeGrad.addColorStop(1, '#0984e3')
+      
+      drawRoundedBar(ctx, groupX - barWidth - gap/2, h - padding.bottom - incomeH, barWidth, incomeH, 4)
+      ctx.fillStyle = incomeGrad
+      ctx.fill()
+
+      // Expense bar
+      const expenseH = (d.expense / maxVal) * chartH
+      const expenseGrad = ctx.createLinearGradient(0, h - padding.bottom - expenseH, 0, h - padding.bottom)
+      expenseGrad.addColorStop(0, '#ff6b6b')
+      expenseGrad.addColorStop(1, '#ee5a24')
+      
+      drawRoundedBar(ctx, groupX + gap/2, h - padding.bottom - expenseH, barWidth, expenseH, 4)
+      ctx.fillStyle = expenseGrad
+      ctx.fill()
+
+      // Label
+      ctx.fillStyle = 'rgba(240, 240, 255, 0.4)'
+      ctx.font = '11px Inter, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText(d.label, groupX, h - padding.bottom + 20)
+    })
+
+  }, [data, height])
+
+  function drawRoundedBar(ctx, x, y, w, h, r) {
+    if (h < 1) return
+    r = Math.min(r, w / 2, h / 2)
+    ctx.beginPath()
+    ctx.moveTo(x + r, y)
+    ctx.lineTo(x + w - r, y)
+    ctx.arcTo(x + w, y, x + w, y + r, r)
+    ctx.lineTo(x + w, y + h)
+    ctx.lineTo(x, y + h)
+    ctx.lineTo(x, y + r)
+    ctx.arcTo(x, y, x + r, y, r)
+    ctx.closePath()
+  }
 
   return (
-    <div className="progress-container">
-      {label && <div className="progress-label">{label}</div>}
-      <div className="progress-track">
-        <div 
-          className="progress-fill"
-          style={{ width: `${width}%`, backgroundColor: barColor }}
-        ></div>
+    <div className="bar-chart-wrapper">
+      <canvas 
+        ref={canvasRef} 
+        style={{ width: '100%', height: `${height}px` }}
+        className="bar-chart-canvas"
+      />
+      <div className="bar-chart-legend">
+        <span className="bar-legend-item">
+          <span className="bar-legend-dot" style={{ background: 'linear-gradient(135deg, #26de81, #0984e3)' }} />
+          Thu nhập
+        </span>
+        <span className="bar-legend-item">
+          <span className="bar-legend-dot" style={{ background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)' }} />
+          Chi tiêu
+        </span>
       </div>
     </div>
   )
 }
 
-export function MiniChart({ color, data }) {
-  const defaultData = [10, 25, 15, 40, 30, 50, 45, 60]
-  const pts = data || defaultData
-  const max = Math.max(...pts)
-  
-  const path = pts.reduce((acc, val, i) => {
-    const x = (i / (pts.length - 1)) * 60
-    const y = 24 - (val / max) * 24
-    return i === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`
-  }, "")
+/* ============================================
+   Progress Bar
+   ============================================ */
+export function ProgressBar({ value, max, color, showLabel = true, height = 8 }) {
+  const percent = max > 0 ? Math.min((value / max) * 100, 100) : 0
+  const isOver = value > max
 
   return (
-    <svg width="60" height="24" className="mini-chart">
-      <path d={path} fill="none" stroke={color || "#2563EB"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <div className="progress-wrapper">
+      {showLabel && (
+        <div className="progress-labels">
+          <span>{formatMoney(value)}</span>
+          <span className="progress-max">{formatMoney(max)}</span>
+        </div>
+      )}
+      <div className="progress-track" style={{ height }}>
+        <div 
+          className={`progress-fill ${isOver ? 'progress-over' : ''}`}
+          style={{ 
+            width: `${percent}%`,
+            background: isOver 
+              ? 'linear-gradient(90deg, #ff6b6b, #ee5a24)' 
+              : `linear-gradient(90deg, ${color}, ${color}88)`,
+            boxShadow: `0 0 10px ${color}44`,
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
+/* ============================================
+   Sparkline (mini line chart)
+   ============================================ */
+export function Sparkline({ data, color = '#6c5ce7', width = 120, height = 40 }) {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !data?.length) return
+
+    const ctx = canvas.getContext('2d')
+    const dpr = window.devicePixelRatio || 1
+    
+    canvas.width = width * dpr
+    canvas.height = height * dpr
+    ctx.scale(dpr, dpr)
+    ctx.clearRect(0, 0, width, height)
+
+    const padding = 4
+    const chartW = width - padding * 2
+    const chartH = height - padding * 2
+    const max = Math.max(...data, 1)
+    const min = Math.min(...data, 0)
+    const range = max - min || 1
+
+    // Draw gradient area
+    ctx.beginPath()
+    data.forEach((val, i) => {
+      const x = padding + (i / (data.length - 1)) * chartW
+      const y = padding + chartH - ((val - min) / range) * chartH
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+
+    // Close area
+    ctx.lineTo(padding + chartW, padding + chartH)
+    ctx.lineTo(padding, padding + chartH)
+    ctx.closePath()
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, height)
+    gradient.addColorStop(0, color + '40')
+    gradient.addColorStop(1, 'transparent')
+    ctx.fillStyle = gradient
+    ctx.fill()
+
+    // Draw line
+    ctx.beginPath()
+    data.forEach((val, i) => {
+      const x = padding + (i / (data.length - 1)) * chartW
+      const y = padding + chartH - ((val - min) / range) * chartH
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.strokeStyle = color
+    ctx.lineWidth = 2
+    ctx.lineJoin = 'round'
+    ctx.stroke()
+
+    // Draw end dot
+    const lastX = padding + chartW
+    const lastY = padding + chartH - ((data[data.length - 1] - min) / range) * chartH
+    ctx.beginPath()
+    ctx.arc(lastX, lastY, 3, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.fill()
+
+  }, [data, color, width, height])
+
+  return (
+    <canvas 
+      ref={canvasRef}
+      style={{ width, height }}
+      className="sparkline-canvas"
+    />
   )
 }

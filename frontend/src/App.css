@@ -1,66 +1,6 @@
-.app-container {
-  display: flex;
+/* App.css - Additional app-level styles */
+
+.app {
   min-height: 100vh;
-  background-color: var(--bg-primary);
   position: relative;
-}
-
-.main-content {
-  flex: 1;
-  margin-left: 64px; /* Default sidebar width */
-  transition: margin-left 0.3s ease;
-  width: calc(100% - 64px);
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 32px 24px;
-  padding-bottom: 100px;
-}
-
-.main-content.full-width {
-  margin-left: 0;
-  width: 100%;
-}
-
-.fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background-color: var(--primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 100;
-  border: none;
-}
-
-.fab:hover {
-  transform: scale(1.05);
-  background-color: #1d4ed8;
-}
-
-@media (min-width: 1024px) {
-  .main-content {
-    margin-left: 64px;
-    padding: 40px;
-  }
-}
-
-@media (max-width: 767px) {
-  .main-content {
-    margin-left: 0;
-    padding: 24px 16px;
-    padding-bottom: 120px; /* Space for bottom nav and FAB */
-  }
-  
-  .fab {
-    bottom: 80px; /* Above bottom nav */
-    right: 16px;
-  }
 }
